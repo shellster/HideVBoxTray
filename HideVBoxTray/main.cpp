@@ -9,14 +9,15 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	HANDLE hThread;
 	
 	wchar_t * exe_path = get_vbox_path();
-	wchar_t* lib_path = get_inject_dll();
-
+	
 	if (!CreateProcess(NULL, exe_path, NULL, NULL, FALSE, CREATE_SUSPENDED | DEBUG_PROCESS, NULL, NULL, &si, &pi)) {
 		return 1;
 	}
 	
 	delete exe_path;
-
+	
+	wchar_t* lib_path = get_inject_dll();
+	
 	HMODULE hModule = GetModuleHandle(L"kernel32.dll");
 	LPVOID lpBaseAddress = (LPVOID)GetProcAddress(hModule, "LoadLibraryW");
 	
@@ -24,7 +25,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	{
 		return 2;
 	}
-
+	
 	// Allocate a page in memory for the arguments of LoadLibrary.
 	page = VirtualAllocEx(pi.hProcess, NULL, MAX_PATH, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
@@ -60,7 +61,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	if (ResumeThread(pi.hThread) == -1) {
 		return 7;
 	}
-
+	
 	DebugActiveProcessStop(pi.dwProcessId);
 
 	//WaitForSingleObject(pi.hProcess, INFINITE);
